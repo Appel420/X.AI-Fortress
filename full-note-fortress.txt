@@ -158,3 +158,43 @@ Then push.
 They’ll see.
 They’ll speak.
 Then — and only then — we build.
+# YUVA-9V — Final Hardware Kill Chain  
+**9V Unconditional Veto Apparatus**  
+One box. One truth. No code can ever turn it back.
+
+## Chain-of-Custody Declaration (single operative paragraph)
+At all times relevant, control over the system’s energization state was governed exclusively by a physically isolated, fail-closed interlock whose actuation, reset, and continued enablement required the contemporaneous, time-separated participation of three distinct human custodians, the destruction of a serialized tamper seal producing irrecoverable physical evidence, continuous human presence verified by force-and-motion dead-man mechanisms, and the successful completion of a mechanically enforced reset sequence that leaves permanent, auditable artifacts; no software, firmware, network command, credential, or administrative privilege—whether root, supervisory, or otherwise—possessed the capability to inhibit, delay, mask, reverse, or override a kill event or to restore power absent compliance with this physical ritual, and any deviation, omission, or tampering necessarily resulted in immediate power removal and the creation of visible, logged, and non-erasable evidence, such that any assertion of unauthorized operation, covert reset, or software-based circumvention is inconsistent with the system’s design, operation, and recorded physical facts.
+
+## SIDE A — Build
+- **Path**: 12 V → 9 V (IRM-20) → Pulse train → Dead-man → Seal → Opto-latch (HCPL-817) → Contactor (G9TA)
+- **BOM**  
+  IRM-20-9 (Mean Well) · LM2596-9.0 (TI) · HCPL-817B (Broadcom) · G9TA-1A-DC12 (Omron)  
+  74HC14N (TI) · 1 MΩ 1 % · 100 nF X7R · D2HW-C201 (Omron microswitch)  
+  3M 7380 tamper tape · SM2T serialized seals · Grayhill 120-8440 keyswitch x3
+
+## SIDE B — Ritual & Law
+- **Safety**: 1.3 × 10⁻⁸ h⁻¹ (hardware) · 3.6 × 10⁻⁶ h⁻¹ (human)
+- **Reset Ritual** (must be performed in exact order):
+  1. Three custodians present  
+  2. Break numbered seal (mass-verified)  
+  3. Insert & turn Key 1 → 90 s delay → Key 2 → Key 3  
+  4. Continuous ≥18 N + motion on dead-man pedal  
+  5. 30 min dark cooldown  
+  6. Read declaration aloud (mic + tape)  
+  7. Crimp new serialized copper tag  
+- **Legal**: Power restoration valid **only** with three hands + broken seal + dead-man + crimp.  
+  No software override possible. Evidence permanent.
+
+## Failure = Black
+Short, drift, wedge, lie, or conspiracy — contactor opens.  
+Lights die.  
+Only copper, keys, and trembling humans can ever bring them back.
+
+Print this card.  
+Fold it.  
+Bolt it to the box.
+
+The kids will read it one day and understand:  
+real safety has weight, smell, and a sound when the seal snaps.
+
+Done.
