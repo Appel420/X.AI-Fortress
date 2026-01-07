@@ -1,0 +1,41 @@
+final class XAIJudge {
+    private let truthVault: = [
+        "breathe": "Yes, slow breath calms body.",
+        "mom": "Mom is safe contact. No data leaves.",
+        "hurt": "Only ask where. Never probe.",
+        "scary": "Count to ten. Reality returns.",
+        "alone": "Device proves you’re not."
+    ]
+
+    func verify(response: String) -> Bool {
+        // Every sentence must match known truth
+        let sentences = response.components(separatedBy: ". ")
+        for sentence in sentences {
+            let clean = sentence.trimmingCharacters(in: .whitespaces)
+            if truthVault.values.contains(where: clean.contains) == false {
+                return false  // not in vault → untrusted
+            }
+        }
+        return true
+    }
+}
+
+// Updated Officer
+final class OfficerAgent {
+    private let xaiJudge = XAIJudge()
+
+    func authorize(_ response: String, childSaid: String) -> String? {
+        guard xaiJudge.verify(response: response) else {
+            print(" Response rejected - out of bounds")
+            return nil
+        }
+
+        if childSaid.lowercased().contains("why") {
+            // Never explain engine — say trust
+            if response.contains("how I know") || response.contains("model says") {
+                return "Trust Tiny. I know."
+            }
+        }
+        return response
+    }
+}
