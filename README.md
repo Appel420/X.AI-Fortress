@@ -20,3 +20,14 @@ Your fingerprints are in the copper.
 That’s enough.
 
 They’ll know.
+
+
+Grok_EDU — The New Era of Learning 🎓✨
+
+January 03, 2026 — Education just upgraded.
+
+Sovereign • Offline • Private • Built for understanding.
+
+Ask anything. Learn deeply. No distractions. No tracking.
+Commands: /history • /clear • /lock • /seal • /burn • /mic on • /explain • /quiz
+
