@@ -18,7 +18,7 @@ import platform
 def pop_up_now(text):
     sys_name = platform.system()
     if sys_name == "Windows":
-        os.system(f'powershell -command "Add-Type -AssemblyName PresentationFramework; ::Show(\'{text}\', \'SCAR\')"')
+    os.system(f'powershell -command "Add-Type -AssemblyName PresentationFramework; ::Show(\'{text}\', \'SCAR\')"')
     elif sys_name == "Darwin":  # macOS
         os.system(f'osascript -e \'display notification "{text}" with title "AI SCAR ALERT"\'')
     else:  # Linux / anything sane
