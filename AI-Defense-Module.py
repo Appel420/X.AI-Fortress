@@ -14,7 +14,15 @@ from nacl import secret, utils
 from nacl.encoding import RawEncoder
 from pqcrypto.sign import dilithium2
 from dotenv import load_dotenv
-
+import platform
+def pop_up_now(text):
+    sys_name = platform.system()
+    if sys_name == "Windows":
+        os.system(f'powershell -command "Add-Type -AssemblyName PresentationFramework; ::Show(\'{text}\', \'SCAR\')"')
+    elif sys_name == "Darwin":  # macOS
+        os.system(f'osascript -e \'display notification "{text}" with title "AI SCAR ALERT"\'')
+    else:  # Linux / anything sane
+        os.system(f'notify-send "AI SCAR" "{text}"')
 load_dotenv()
 
 # --- Logging Setup ---
