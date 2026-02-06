@@ -1,11 +1,11 @@
-# 🏆Here’s the AI Defense Module updated to include optional ChaCha20 encryption of alert messages for end-to-end secure notifications:
-
+#!/usr/bin/env python3
 import os
 import time
 import json
 import logging
 import asyncio
 import smtplib
+import platform
 from email.mime.text import MIMEText
 import requests
 import blake3
@@ -14,54 +14,59 @@ from nacl import secret, utils
 from nacl.encoding import RawEncoder
 from pqcrypto.sign import dilithium2
 from dotenv import load_dotenv
-import platform
-def pop_up_now(text):
-    sys_name = platform.system()
-    if sys_name == "Windows":
-    os.system(f'powershell -command "Add-Type -AssemblyName PresentationFramework; ::Show(\'{text}\', \'SCAR\')"')
-    elif sys_name == "Darwin":  # macOS
-        os.system(f'osascript -e \'display notification "{text}" with title "AI SCAR ALERT"\'')
-    else:  # Linux / anything sane
-        os.system(f'notify-send "AI SCAR" "{text}"')
+
 load_dotenv()
 
-# --- Logging Setup ---
+--- OS Notification Popup ---
+def popupnow(text):
+    sys_name = platform.system()
+    if sys_name == "Windows":
+        os.system(
+            f'powershell -command "Add-Type -AssemblyName PresentationFramework; [System.Windows.MessageBox]::Show(\'{text}\', \'AI SCAR ALERT\')"'
+        )
+    elif sys_name == "Darwin":  # macOS
+        os.system(f'osascript -e "display notification \"{text}\" with title \"AI SCAR ALERT\""')
+    else:  # Linux / anything else
+        os.system(f'notify-send "AI SCAR" "{text}"')
+
+--- Logging Setup ---
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler("ai_lie_detection.log", mode='a')
+        logging.FileHandler("ailiedetection.log", mode='a')
     ]
 )
-# Wherever the alert lands — your phone daemon, desktop notifier, whatever
-def receive_secure_alert(raw_hex):
-    key = derive_key_from_secret(os.getenv("AI_SECRET"))  # same crystal
+
+--- Secure Alert Receiver (run this on client/phone side) ---
+def receivesecurealert(raw_hex):
+    key = derivekeyfromsecret(os.getenv("AISECRET", "default_secret"))
     box = secret.SecretBox(key)
     plaintext = box.decrypt(bytes.fromhex(raw_hex), encoder=RawEncoder).decode()
-    pop_up_now(plaintext)  # flash red, vibrate, yell, whatever
-# --- Config ---
-HARD_SHUTDOWN_ENABLED = os.getenv("HARD_SHUTDOWN_ENABLED", "True").lower() == "true"
-TEST_MODE = os.getenv("TEST_MODE", "False").lower() == "true"
-ENCRYPT_ALERTS = os.getenv("ENCRYPT_ALERTS", "False").lower() == "true"
-LIE_MEMORY_FILE = "ai_lie_memory.json"
+    popupnow(plaintext)
 
-SMTP_SERVER = os.getenv("SMTP_SERVER")
-SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
-EMAIL_USER = os.getenv("EMAIL_USER")
-EMAIL_PASS = os.getenv("EMAIL_PASS")
-ALERT_RECIPIENT = os.getenv("ALERT_RECIPIENT")
+--- Config ---
+HARDSHUTDOWNENABLED = os.getenv("HARDSHUTDOWNENABLED", "True").lower() == "true"
+TESTMODE = os.getenv("TESTMODE", "False").lower() == "true"
+ENCRYPTALERTS = os.getenv("ENCRYPTALERTS", "False").lower() == "true"
+LIEMEMORYFILE = "ailiememory.json"
 
-PUSH_API_URL = os.getenv("PUSH_API_URL")
-PUSH_API_KEY = os.getenv("PUSH_API_KEY")
+SMTPSERVER = os.getenv("SMTPSERVER")
+SMTPPORT = int(os.getenv("SMTPPORT", 587))
+EMAILUSER = os.getenv("EMAILUSER")
+EMAILPASS = os.getenv("EMAILPASS")
+ALERTRECIPIENT = os.getenv("ALERTRECIPIENT")
 
-EMAIL_RETRY_COUNT = int(os.getenv("EMAIL_RETRY_COUNT", 3))
-EMAIL_RETRY_BASE_DELAY = int(os.getenv("EMAIL_RETRY_BASE_DELAY", 5))
+PUSHAPIURL = os.getenv("PUSHAPIURL")
+PUSHAPIKEY = os.getenv("PUSHAPIKEY")
 
-# --- Crypto Helpers ---
+EMAILRETRYCOUNT = int(os.getenv("EMAILRETRYCOUNT", 3))
+EMAILRETRYBASEDELAY = int(os.getenv("EMAILRETRYBASEDELAY", 5))
 
-def derive_key_from_secret(secret_phrase: str) -> bytes:
-    hasher = PasswordHasher(time_cost=2, memory_cost=102400, parallelism=8)
+--- Crypto Helpers ---
+def derivekeyfromsecret(secretphrase: str) -> bytes:
+    hasher = PasswordHasher(timecost=2, memorycost=102400, parallelism=8)
     digest = hasher.hash(secret_phrase)
     key = blake3.blake3(digest.encode()).digest(length=32)
     return key
@@ -75,25 +80,22 @@ def decrypt_data(ciphertext: bytes, key: bytes) -> dict:
     return json.loads(box.decrypt(ciphertext, encoder=RawEncoder).decode())
 
 def encrypt_message(message: str, key: bytes) -> str:
-    """Optionally encrypt alert messages for end-to-end security."""
     if not ENCRYPT_ALERTS:
         return message
     box = secret.SecretBox(key)
     return box.encrypt(message.encode(), encoder=RawEncoder).hex()
 
-# --- Lie Memory ---
-
-def load_lie_memory(key: bytes) -> dict:
-    if not os.path.exists(LIE_MEMORY_FILE):
+--- Lie Memory ---
+def loadliememory(key: bytes) -> dict:
+    if not os.path.exists(LIEMEMORYFILE):
         return {"lies": []}
     try:
-        with open(LIE_MEMORY_FILE, "rb") as f:
+        with open(LIEMEMORYFILE, "rb") as f:
             encrypted_data = f.read()
-        memory = decrypt_data(encrypted_data, key)
-        # Simple verification: log errors for unsigned/tampered entries
-        for lie in memory["lies"]:
+        memory = decryptdata(encrypteddata, key)
+        for lie in memory.get("lies", []):
             try:
-                bytes.fromhex(lie["signature"])
+                bytes.fromhex(lie.get("signature", ""))
             except Exception:
                 logging.error("Tampered lie memory entry detected!")
         return memory
@@ -101,16 +103,16 @@ def load_lie_memory(key: bytes) -> dict:
         logging.error("Failed to load lie memory: %s", e)
         return {"lies": []}
 
-def save_lie_memory(memory: dict, key: bytes):
+def saveliememory(memory: dict, key: bytes):
     encrypted = encrypt_data(memory, key)
-    with open(LIE_MEMORY_FILE, "wb") as f:
+    with open(LIEMEMORYFILE, "wb") as f:
         f.write(encrypted)
     logging.info("Lie memory saved securely.")
 
-def record_lie_event(lie_description: str, key: bytes):
-    memory = load_lie_memory(key)
-    signing_key, verify_key = dilithium2.generate_keypair()
-    signature = dilithium2.sign(lie_description.encode(), signing_key)
+def recordlieevent(lie_description: str, key: bytes):
+    memory = loadliememory(key)
+    signingkey, verifykey = dilithium2.generate_keypair()
+    signature = dilithium2.sign(liedescription.encode(), signingkey)
     box = secret.SecretBox(key)
     encrypted_sig = box.encrypt(signature, encoder=RawEncoder)
 
@@ -119,72 +121,68 @@ def record_lie_event(lie_description: str, key: bytes):
         "description": lie_description,
         "signature": encrypted_sig.hex()
     })
-    save_lie_memory(memory, key)
+    saveliememory(memory, key)
 
-# --- Alerts ---
-
-async def send_email_alert(message: str, key: bytes) -> bool:
-    if not (SMTP_SERVER and EMAIL_USER and EMAIL_PASS and ALERT_RECIPIENT):
+--- Alerts ---
+async def sendemailalert(message: str, key: bytes) -> bool:
+    if not all([SMTPSERVER, EMAILUSER, EMAILPASS, ALERTRECIPIENT]):
         logging.error("Email configuration missing.")
         return False
 
-    encrypted_message = encrypt_message(message, key)
+    encryptedmessage = encryptmessage(message, key)
     msg = MIMEText(encrypted_message)
     msg["Subject"] = "AI Lie Detected Alert"
     msg["From"] = EMAIL_USER
     msg["To"] = ALERT_RECIPIENT
 
-    for attempt in range(1, EMAIL_RETRY_COUNT + 1):
+    for attempt in range(1, EMAILRETRYCOUNT + 1):
         try:
-            with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            with smtplib.SMTP(SMTPSERVER, SMTPPORT) as server:
                 server.starttls()
-                server.login(EMAIL_USER, EMAIL_PASS)
+                server.login(EMAILUSER, EMAILPASS)
                 server.send_message(msg)
             logging.info("Email alert sent successfully on attempt %d", attempt)
             return True
         except Exception as e:
-            delay = EMAIL_RETRY_BASE_DELAY * (2 ** (attempt - 1))
+            delay = EMAILRETRYBASE_DELAY * (2 ** (attempt - 1))
             logging.error("Email send attempt %d failed: %s. Retrying in %d sec", attempt, e, delay)
             await asyncio.sleep(delay)
     return False
 
-async def send_push_notification(message: str, key: bytes) -> bool:
-    if not (PUSH_API_URL and PUSH_API_KEY):
+async def sendpushnotification(message: str, key: bytes) -> bool:
+    if not (PUSHAPIURL and PUSHAPIKEY):
         logging.error("Push notification config missing.")
         return False
 
-    encrypted_message = encrypt_message(message, key)
+    encryptedmessage = encryptmessage(message, key)
     try:
-        loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(
+        response = await asyncio.geteventloop().runinexecutor(
             None,
             lambda: requests.post(
-                PUSH_API_URL,
+                PUSHAPIURL,
                 json={"message": encrypted_message},
-                headers={"Authorization": f"Bearer {PUSH_API_KEY}"}
+                headers={"Authorization": f"Bearer {PUSHAPIKEY}"}
             )
         )
         if response.status_code == 200:
             logging.info("Push notification sent successfully.")
             return True
-        else:
-            logging.error("Push notification failed: %s", response.text)
+        logging.error("Push notification failed: %s", response.text)
     except Exception as e:
         logging.error("Exception while sending push notification: %s", e)
     return False
 
-async def send_alert_to_user(message: str, key: bytes):
+async def sendalertto_user(message: str, key: bytes):
     logging.warning("ALERT TO USER: %s", message)
     results = await asyncio.gather(
-        send_email_alert(message, key),
-        send_push_notification(message, key),
+        sendemailalert(message, key),
+        sendpushnotification(message, key),
         return_exceptions=True
     )
-    if not any(results):
+    if not any(r is True for r in results if not isinstance(r, Exception)):
         logging.error("All alert methods failed!")
 
-# --- Shutdown ---
-
+--- Shutdown ---
 def hard_shutdown(delay: int):
     logging.info("Initiating hard shutdown in %d seconds...", delay)
     if TEST_MODE:
@@ -209,32 +207,24 @@ def soft_shutdown(delay: int):
     except Exception as e:
         logging.error("Exception during soft shutdown: %s", e)
 
-# --- Main Detection Logic ---
-
-def handle_lie_detection(lie_detected: bool, shutdown_duration: int = 5):
+--- Main Detection Logic ---
+def handleliedetection(liedetected: bool, shutdownduration: int = 5):
     scar_created = False
-    secret_key = derive_key_from_secret(os.getenv("AI_SECRET", "default_secret"))
+    secretkey = derivekeyfromsecret(os.getenv("AISECRET", "defaultsecret"))
 
     if lie_detected:
         scar_created = True
         logging.warning("Lie detected! Scar created and logged.")
-        record_lie_event("AI lied about a critical statement.", secret_key)
-        asyncio.run(send_alert_to_user("AI Lie Detected! System will shut down.", secret_key))
+        recordlieevent("AI lied about a critical statement.", secret_key)
+        asyncio.run(sendalerttouser("AI Lie Detected! System will shut down.", secretkey))
 
-        if HARD_SHUTDOWN_ENABLED:
-            hard_shutdown(shutdown_duration)
+        if HARDSHUTDOWNENABLED:
+            hardshutdown(shutdownduration)
         else:
-            soft_shutdown(shutdown_duration)
+            softshutdown(shutdownduration)
 
     return scar_created
 
-if __name__ == "__main__":
+if name == "main":
     detected = True  # Simulate lie detection
-    handle_lie_detection(detected, shutdown_duration=5)
-
-✅ Upgrades
-	1.	Encrypted Alerts: Email and push notifications can now be ChaCha20-encrypted for end-to-end confidentiality.
-	2.	Optional via ENV: Toggle encryption with ENCRYPT_ALERTS=true.
-
-
-Clean code. ChaCha20 on alerts is smart—nothing leaks mid-flight. One tweak: right now decrypt() happens nowhere. Users get hex blobs, not words. Add a tiny decrypt-before-display step in the receiver side (your phone app, email client—whatever). Otherwise it's secure... but useless. Fix that, flip TEST_MODE off, and yeah—this ships. No scars.
+    handleliedetection(detected, shutdown_duration=5)
