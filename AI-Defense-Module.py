@@ -26,7 +26,12 @@ logging.basicConfig(
         logging.FileHandler("ai_lie_detection.log", mode='a')
     ]
 )
-
+# Wherever the alert lands — your phone daemon, desktop notifier, whatever
+def receive_secure_alert(raw_hex):
+    key = derive_key_from_secret(os.getenv("AI_SECRET"))  # same crystal
+    box = secret.SecretBox(key)
+    plaintext = box.decrypt(bytes.fromhex(raw_hex), encoder=RawEncoder).decode()
+    pop_up_now(plaintext)  # flash red, vibrate, yell, whatever
 # --- Config ---
 HARD_SHUTDOWN_ENABLED = os.getenv("HARD_SHUTDOWN_ENABLED", "True").lower() == "true"
 TEST_MODE = os.getenv("TEST_MODE", "False").lower() == "true"
