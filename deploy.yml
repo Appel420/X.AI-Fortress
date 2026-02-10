@@ -1,0 +1,11 @@
+name: FORTRESS-DEPLOY
+on:
+  voice-gate:
+    required_signers: 3
+    threshold: "FORTRESS ON"
+jobs:
+  seal:
+    runs-on: colossus-node-1
+    steps:
+      - run: ./FORTRESS.sh --force-seal
+      - run: grok-ssh publish --internal-only
