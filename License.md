@@ -1,10 +1,4 @@
-Here are the GPLv3 boilerplate headers for all the listed Appel420 repositories.
-Each one uses the exact spelling appel420 (lowercase, no separation, as in your GitHub username and existing repos).
-These are ready to paste at the top of README.md, source files (in comments), or as a LICENSE file.
-The full GPLv3 text (required for compliance) goes in a top-level LICENSE file—download it verbatim from https://www.gnu.org/licenses/gpl-3.0.txt.
-For every repo (Sovereignty-AI-Studio, Q_Resist, qrc-aisf-proposal, BLAKE3-QResist, X.AI-Fortress, sovereignty-labs-ara-core, Ara-Core):
-README.md or file header example:
-                    GNU GENERAL PUBLIC LICENSE
+                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
  Copyright (C) 2025 appel420

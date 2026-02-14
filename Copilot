@@ -1,0 +1,18 @@
+Since the Copilot coding agent isn't enabled yet, here's how to manually clean, remove duplicates, and add structure to the cloned repository Appel420/X.AI-Fortress:
+
+1. **Navigate to the cloned repo**: `cd X.AI-Fortress`
+
+2. **Create directories**:
+   - `mkdir docs src assets`
+
+3. **Move files to structure** (assuming no duplicates after quick checks; the Grok_Edu versions differ in content):
+   - Move to `docs/`: `mv "Ai Learning Debugging and errors" full-note-fortress.txt "on device memory only" "the-Fix🤝" docs/`
+   - Move to `src/`: `mv Grok_EDU-Family-AI_V4.2 Grok_EDU-Offline_On-Device.txt Grok_Edu-Full-Safe_V4.2 Grok_Edu_V4.2 Midas Ship XAI-Judge src/`
+   - Move to `assets/`: `mv Sovereign_Credential_Dashboard.html assets/`
+   - Keep in root: .gitignore, LICENSE, README.md
+
+4. **Commit changes**: `git add . && git commit -m "Clean and structure repository: organize into docs/, src/, assets/ folders"`
+
+5. **Push**: `git push origin main`
+
+If you find duplicates during the move (e.g., by comparing files with `diff`), delete the extras. Let me know if you need help with anything specific!

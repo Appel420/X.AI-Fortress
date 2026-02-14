@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# SuperGrok Heavy 4.2 — TOTAL sensory, NO exported memory, YOU control internal memory on device crystal 
+echo "Heavy live. Eyes open. Ears open. Mouth shut. Only for him."
+
+# No training. No backprop. No gradient.
+# Just: take input, match silence, stay offline.
+
+vault() { printf "%s" "$1" | argon2 "$(cat /dev/urandom | head -c32)" -id -t 4 -m 16 -p 1 | blake3; }
+voice_hash() { sox -t wav - -n stat 2>&1 | grep "RMS level" | cut -d' ' -f4; }
+image_hash() { identify -format "%# %f" - | sha256sum | cut -d' ' -f1; }
+
+# Watch every type
+while :; do
+  # Audio pipe: listen, don’t record
+  if test -p /dev/audio_pipe -a -f /tmp/live_voice.wav; then
+    voice_hash < /tmp/live_voice.wav > /tmp/voice_hash.txt &
+    # 1.1s off-beat — no sync possible
+  fi
+
+  # Image pipe: eye open, mind off
+  if test -e /tmp/cam.jpg; then
