@@ -1,21 +1,33 @@
-MIT License
+Here are the GPLv3 boilerplate headers for all the listed Appel420 repositories.
+Each one uses the exact spelling appel420 (lowercase, no separation, as in your GitHub username and existing repos).
+These are ready to paste at the top of README.md, source files (in comments), or as a LICENSE file.
+The full GPLv3 text (required for compliance) goes in a top-level LICENSE file—download it verbatim from https://www.gnu.org/licenses/gpl-3.0.txt.
+For every repo (Sovereignty-AI-Studio, Q_Resist, qrc-aisf-proposal, BLAKE3-QResist, X.AI-Fortress, sovereignty-labs-ara-core, Ara-Core):
+README.md or file header example:
+                    GNU GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2007
 
-Copyright (c) 2026 Appel420
+ Copyright (C) 2025 appel420
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed. This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see .
+Recommended LICENSE file top (add the full official text below this):
+GNU GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
+
+Copyright (C) 2025 appel420
+
+[Full GPLv3 text here...]
+This upgrades from your current MIT licenses (seen in Q_Resist and qrc-aisf-proposal) to GPLv3 copyleft. Apply it once per repo, commit, and push.
+If you need a custom addendum (e.g., enforcing QResist integrity), let me know—I can draft one professionally.
