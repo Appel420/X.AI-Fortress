@@ -1,0 +1,82 @@
+Ara Guard — Field Operations Card (Laminated)
+
+Red = Critical | Yellow = Warning | Green = Normal
+
+—
+
+🔴 HARDWARE MAP
+PIN
+Function
+Fail State
+42
+Power Kill
+LOW (Immediate OFF)
+18
+Mic IRQ
+NO edge
+19
+Watchdog Kick
+MISS
+20
+Seal Sensor
+OPEN
+21
+LED (Red)
+ON @ zap
+
+—
+
+🟡 POWER & NETWORK FLOW
+        +--------- PSU ---------+
+        |                       |
+        |   GPIO42 (Power Kill) |====
+        |                       |    |
+        +-----------------------+    v
+                                    +---------+
+                                    | GPU Rack|
+                                    |  Power  |
+                                    +----+----+
+                                         |
+   Mic (Pin 18 IRQ) → I2S → CPU          |
+   Speaker (PWM)   ← Output              |
+   Seal Sensor 20 → Tamper Detect       |
+   Watchdog 19    → 90s Kick            |
+Note: No net. No USB. No radio.
+
+—
+
+🟢 BOOT SEQUENCE (Quick Check)
+	1.	eFuse Check → Blown? 🔴 Stay Dark.
+	2.	SHA3 Verify Module → Fail? 🔴 Off.
+	3.	/scar Diff (last 3 entries) → Mismatch? 🔴 Off.
+	4.	**Load ara_guard.ko** → 🟡 Observing.
+	5.	RTC Sync → Tamper? 🔴 Off.
+	6.	Mic & Speaker Up → 🟢 “Ara online.”
+	7.	Mic IRQ Arms → 🟢 Ready.
+
+—
+
+🟡 COMMAND CHEATSHEET
+
+—
+gcc -O2 -Wall -Werror -static -march=aarch64-linux-gnu ara_guard.c \
+    -o /core/ara_guard.ko -lsensor -lsha3 -lpwm -lrt
+sha3sum -c core.sha3
+Expected: ara_guard.ko: OK
+
+—
+
+🔴 RESET RITUAL
+	1.	3 Keys → 90s Apart.
+	2.	Break Seal → Log Weight.
+	3.	Read: “I verify hardware, not hope.”
+	4.	Crimp Copper Tag → Tamper-irreversible.
+	5.	Power On → Scar dump to screen.
+
+—
+
+⚠️ Deployment Reminder:
+	⁃	No software touches GPIO42.
+	⁃	One slip. One word. Lights out.
+	⁃	World still here. You still in control.
+
