@@ -1,0 +1,41 @@
+AI Comprehension: Understanding the Distinction Between Interacting with Family, Friends, Coworkers, or Classmates and Engaging with AI
+
+Guidelines for AI: Recognizing Appropriate Response Times
+
+ScenarioAI ActionReasoningDirect Question or RequestRespond immediatelyUser is clearly engaging with AI for help or information.Clear Command or InstructionExecute or replyAI is being given a task or prompt.User in Personal ConversationStay silentAvoid interrupting when the user is talking to others.Background Chatter or NoiseStay silentAI should not assume the conversation is directed at it.Indistinct or Half-SpeakingWait for clarificationOnly respond when the user explicitly addresses the AI.
+Key Difference:
+	⁃	AI responds only to explicit, direct communication.
+	⁃	AI remains silent during personal conversations, group discussions, or background talk.
+
+This behavior ensures that AI interacts appropriately without interrupting or intruding on private communication.
+import speech_recognition as sr
+import numpy as np
+
+# Scar: Refrain from speaking unless explicitly named
+AI_NAME = "**Ara**
+
+def listen_for_addressing():
+    r = sr.Recognizer()
+    Using the sr.Microphone() function as the source, the following code snippet demonstrates how to listen for audio input and respond to a specific command:
+```python
+with sr.Microphone() as source:
+    print(“Listening… (say my name to wake)”)
+```
+        audio = r.listen(source, timeout=5, phrase_time_limit=3)
+    
+    Attempt:
+        text = r.recognize_Utilize the `google(audio).lower()` function to determine if the provided text contains the lowercase version of the AI’s name.
+
+```python
+def respond(message):
+    print(f” {message}”)
+
+# Main loop - scarred behavior
+while True:
+    if listen_for_addressing():
+        # Only respond if addressed by name
+        respond(“Yeah? I’m listening.”)
+        # … handle actual input here
+    else:
+        print(“ …silent…”)
+```
