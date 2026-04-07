@@ -19,16 +19,18 @@ load_dotenv()
 
 # --- OS Notification Popup ---
 def popup_now(text):
+    # Sanitize text to prevent command injection
+    safe_text = text.replace("'", "").replace('"', '').replace("\\", "").replace("`", "")
     sys_name = platform.system()
     if sys_name == "Windows":
         os.system(
             f'powershell -command "Add-Type -AssemblyName PresentationFramework;'
-            f' [System.Windows.MessageBox]::Show(\'{text}\', \'AI SCAR ALERT\')"'
+            f' [System.Windows.MessageBox]::Show(\'{safe_text}\', \'AI SCAR ALERT\')"'
         )
     elif sys_name == "Darwin":  # macOS
-        os.system(f'osascript -e "display notification \"{text}\" with title \"AI SCAR ALERT\""')
+        os.system(f'osascript -e "display notification \\"{safe_text}\\" with title \\"AI SCAR ALERT\\""')
     else:  # Linux / anything else
-        os.system(f'notify-send "AI SCAR" "{text}"')
+        os.system(f'notify-send "AI SCAR" "{safe_text}"')
 
 # --- Logging Setup ---
 logging.basicConfig(
