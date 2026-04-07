@@ -1,0 +1,10 @@
+# X.AI Fortress — Python Dependencies
+torch
+pennylane
+scikit-learn
+blake3
+argon2-cffi
+PyNaCl
+pqcrypto
+requests
+python-dotenv

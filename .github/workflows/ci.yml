@@ -1,0 +1,37 @@
+name: FORTRESS CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate Python syntax
+        run: |
+          python -m py_compile Main.py
+          python -m py_compile Config.py
+          python -m py_compile Quantum_layer.py
+          python -m py_compile fullscan_cli.py
+          python -m py_compile Code-fix.py
+          python -m py_compile Ai-Self-Lie-Director.py
+          python -m py_compile AI-Defense-Module.py
+          python -m py_compile src/ai_defense_module.py
+
+      - name: Validate shell scripts
+        run: |
+          bash -n FORTRESS.sh
+          bash -n src/grok-ssh/sign-on.sh
+          bash -n src/grok-ssh/add-key.sh
+          bash -n src/grok-ssh/verify.sh
