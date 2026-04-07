@@ -1,11 +1,45 @@
 name: FORTRESS-DEPLOY
 on:
-  voice-gate:
-    required_signers: 3
-    threshold: "FORTRESS ON"
+  workflow_dispatch:
+    inputs:
+      force_seal:
+        description: "Force seal deployment"
+        required: false
+        default: "false"
+        type: boolean
+
 jobs:
   seal:
-    runs-on: colossus-node-1
+    runs-on: ubuntu-latest
     steps:
-      - run: ./FORTRESS.sh --force-seal
-      - run: grok-ssh publish --internal-only
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run FORTRESS seal
+        env:
+          FORCE_SEAL: ${{ github.event.inputs.force_seal || 'false' }}
+        run: |
+          chmod +x ./FORTRESS.sh
+          if [ "${FORCE_SEAL}" = "true" ]; then
+            ./FORTRESS.sh --force-seal
+          else
+            ./FORTRESS.sh
+          fi
+
+      - name: Validate Python syntax
+        run: |
+          python3 -m py_compile Main.py
+          python3 -m py_compile Config.py
+          python3 -m py_compile Quantum_layer.py
+          python3 -m py_compile fullscan_cli.py
+          python3 -m py_compile Code-fix.py
+          python3 -m py_compile Ai-Self-Lie-Director.py
+          python3 -m py_compile AI-Defense-Module.py
+          python3 -m py_compile src/ai_defense_module.py
+
+      - name: Validate shell scripts
+        run: |
+          sh -n FORTRESS.sh
+          sh -n src/grok-ssh/sign-on.sh
+          sh -n src/grok-ssh/add-key.sh
+          sh -n src/grok-ssh/verify.sh
