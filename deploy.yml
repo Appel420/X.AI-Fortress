@@ -16,7 +16,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run FORTRESS seal
-        run: chmod +x ./FORTRESS.sh && ./FORTRESS.sh --force-seal
+        env:
+          FORCE_SEAL: ${{ github.event.inputs.force_seal || 'false' }}
+        run: |
+          chmod +x ./FORTRESS.sh
+          if [ "${FORCE_SEAL}" = "true" ]; then
+            ./FORTRESS.sh --force-seal
+          else
+            ./FORTRESS.sh
+          fi
 
       - name: Validate Python syntax
         run: |
@@ -31,7 +39,7 @@ jobs:
 
       - name: Validate shell scripts
         run: |
-          bash -n FORTRESS.sh
-          bash -n src/grok-ssh/sign-on.sh
-          bash -n src/grok-ssh/add-key.sh
-          bash -n src/grok-ssh/verify.sh
+          sh -n FORTRESS.sh
+          sh -n src/grok-ssh/sign-on.sh
+          sh -n src/grok-ssh/add-key.sh
+          sh -n src/grok-ssh/verify.sh

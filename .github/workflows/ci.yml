@@ -34,7 +34,7 @@ jobs:
 
       - name: Validate shell scripts
         run: |
-          bash -n FORTRESS.sh
-          bash -n src/grok-ssh/sign-on.sh
-          bash -n src/grok-ssh/add-key.sh
-          bash -n src/grok-ssh/verify.sh
+          sh -n FORTRESS.sh
+          sh -n src/grok-ssh/sign-on.sh
+          sh -n src/grok-ssh/add-key.sh
+          sh -n src/grok-ssh/verify.sh

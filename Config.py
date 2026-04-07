@@ -1,4 +1,4 @@
-# config.py — Centralized configuration module for SelfFixerDaemon
+# Config.py — Centralized configuration module for SelfFixerDaemon
 import os
 import logging
 import sys

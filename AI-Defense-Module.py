@@ -6,10 +6,11 @@ import logging
 import asyncio
 import smtplib
 import platform
+import subprocess
 from email.mime.text import MIMEText
 import requests
 import blake3
-from argon2 import PasswordHasher
+from argon2 import low_level
 from nacl import secret, utils
 from nacl.encoding import RawEncoder
 from pqcrypto.sign import dilithium2
@@ -19,18 +20,34 @@ load_dotenv()
 
 # --- OS Notification Popup ---
 def popup_now(text):
-    # Sanitize text to prevent command injection
-    safe_text = text.replace("'", "").replace('"', '').replace("\\", "").replace("`", "")
+    # Strip characters that break notifier command quoting
+    unsafe_chars = ["'", '"', "\\", "`", ";", "|", "&", "<", ">", "\n", "\r"]
+    safe_text = text
+    for ch in unsafe_chars:
+        safe_text = safe_text.replace(ch, " ")
+    safe_text = safe_text.strip()
+
     sys_name = platform.system()
     if sys_name == "Windows":
-        os.system(
-            f'powershell -command "Add-Type -AssemblyName PresentationFramework;'
-            f' [System.Windows.MessageBox]::Show(\'{safe_text}\', \'AI SCAR ALERT\')"'
+        subprocess.run(
+            [
+                "powershell",
+                "-NoProfile",
+                "-Command",
+                (
+                    "Add-Type -AssemblyName PresentationFramework; "
+                    f"[System.Windows.MessageBox]::Show('{safe_text}', 'AI SCAR ALERT')"
+                ),
+            ],
+            check=False,
         )
     elif sys_name == "Darwin":  # macOS
-        os.system(f'osascript -e "display notification \\"{safe_text}\\" with title \\"AI SCAR ALERT\\""')
+        subprocess.run(
+            ["osascript", "-e", f'display notification "{safe_text}" with title "AI SCAR ALERT"'],
+            check=False,
+        )
     else:  # Linux / anything else
-        os.system(f'notify-send "AI SCAR" "{safe_text}"')
+        subprocess.run(["notify-send", "AI SCAR", safe_text], check=False)
 
 # --- Logging Setup ---
 logging.basicConfig(
@@ -69,10 +86,17 @@ EMAIL_RETRY_BASE_DELAY = int(os.getenv("EMAIL_RETRY_BASE_DELAY", 5))
 
 # --- Crypto Helpers ---
 def derive_key_from_secret(secret_phrase: str) -> bytes:
-    hasher = PasswordHasher(time_cost=2, memory_cost=102400, parallelism=8)
-    digest = hasher.hash(secret_phrase)
-    key = blake3.blake3(digest.encode()).digest(length=32)
-    return key
+    salt = os.getenv("AI_SECRET_SALT", "ai-fortress-default-salt").encode()
+    raw_key = low_level.hash_secret_raw(
+        secret_phrase.encode(),
+        salt,
+        time_cost=2,
+        memory_cost=102400,
+        parallelism=8,
+        hash_len=32,
+        type=low_level.Type.ID,
+    )
+    return blake3.blake3(raw_key).digest(length=32)
 
 def encrypt_data(data: dict, key: bytes) -> bytes:
     box = secret.SecretBox(key)
@@ -193,10 +217,14 @@ def hard_shutdown(delay: int):
         logging.info("TEST_MODE enabled: Hard shutdown skipped.")
         return
     try:
-        os.system(f"sleep {delay}")
-        code = os.system("sudo reboot")
-        if code != 0:
-            logging.error("Hard shutdown command failed with code %d", code)
+        safe_delay = max(0, int(delay))
+    except (TypeError, ValueError):
+        safe_delay = 0
+    try:
+        time.sleep(safe_delay)
+        result = subprocess.run(["sudo", "reboot"], check=False)
+        if result.returncode != 0:
+            logging.error("Hard shutdown command failed with code %d", result.returncode)
     except Exception as e:
         logging.error("Exception during hard shutdown: %s", e)
 
@@ -220,7 +248,13 @@ def handle_lie_detection(lie_detected: bool, shutdown_duration: int = 5):
         scar_created = True
         logging.warning("Lie detected! Scar created and logged.")
         record_lie_event("AI lied about a critical statement.", secret_key)
-        asyncio.run(send_alert_to_user("AI Lie Detected! System will shut down.", secret_key))
+        alert_coro = send_alert_to_user("AI Lie Detected! System will shut down.", secret_key)
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            asyncio.run(alert_coro)
+        else:
+            loop.create_task(alert_coro)
 
         if HARD_SHUTDOWN_ENABLED:
             hard_shutdown(shutdown_duration)

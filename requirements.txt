@@ -1,10 +1,12 @@
 # X.AI Fortress — Python Dependencies
-torch
-pennylane
-scikit-learn
-blake3
-argon2-cffi
-PyNaCl
-pqcrypto
-requests
-python-dotenv
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.2+cpu
+pennylane==0.37.0
+scikit-learn==1.3.2
+blake3==0.4.1
+argon2-cffi==23.1.0
+PyNaCl==1.5.0
+pqcrypto==2.7.0
+requests==2.31.0
+python-dotenv==1.0.1
+platformdirs==4.2.0
