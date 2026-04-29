@@ -1146,11 +1146,11 @@ ollama pull gemma2        # 5 GB  strong STEM</div>
             <span style="font-size:1rem">🦆</span>
             <span style="font-size:0.82rem;font-weight:800">duck.ai — Full Experience</span>
             <span style="font-size:0.68rem;color:var(--muted)">Private · Anonymous · No account</span>
-            <a href="https://duck.ai" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm" style="margin-left:auto;text-decoration:none">Open in Tab ↗</a>
+            <a href="about:blank" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm" style="margin-left:auto;text-decoration:none">Open in Tab ↗</a>
           </div>
           <iframe
             id="duckAiFrame"
-            src="https://duck.ai"
+            src="about:blank"
             style="width:100%;height:65vh;border:none;display:block"
             referrerpolicy="no-referrer"
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
@@ -2848,9 +2848,9 @@ function switchChatTab(tab) {
     iframe.style.display = 'block';
     tabChat.style.cssText = 'flex:1;padding:9px;background:var(--surface);color:var(--muted);border:none;font-weight:700;font-size:0.78rem;cursor:pointer';
     tabIframe.style.cssText = 'flex:1;padding:9px;background:var(--accent);color:var(--ink);border:none;font-weight:800;font-size:0.78rem;cursor:pointer';
-    // Load duck.ai if not yet loaded
+    // Keep iframe offline-safe by default.
     const f = document.getElementById('duckAiFrame');
-    if (f && !f.src.includes('duck.ai')) f.src = 'https://duck.ai';
+    if (f && f.src !== 'about:blank') f.src = 'about:blank';
   }
 }
 
