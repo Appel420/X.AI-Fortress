@@ -15,8 +15,8 @@
 
 :root {
   --font-display: 'Syne', 'Trebuchet MS', 'Segoe UI', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
-  --font-code: 'Space Mono', 'Fira Mono', 'Consolas', monospace;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --font-code: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 :root {
@@ -1513,19 +1513,19 @@ ollama pull gemma2        # 5 GB  strong STEM</div>
             <!-- Band readouts -->
             <div class="grid-4" style="margin-top:10px">
               <div style="text-align:center">
-                <div id="band-delta" style="font-family:JetBrains Mono;font-size:1rem;color:var(--accent3)">—</div>
+                <div id="band-delta" style="font-family:var(--font-mono);font-size:1rem;color:var(--accent3)">—</div>
                 <div style="font-size:0.6rem;color:var(--muted)">Delta</div>
               </div>
               <div style="text-align:center">
-                <div id="band-theta" style="font-family:JetBrains Mono;font-size:1rem;color:var(--blue)">—</div>
+                <div id="band-theta" style="font-family:var(--font-mono);font-size:1rem;color:var(--blue)">—</div>
                 <div style="font-size:0.6rem;color:var(--muted)">Theta</div>
               </div>
               <div style="text-align:center">
-                <div id="band-alpha" style="font-family:JetBrains Mono;font-size:1rem;color:var(--accent)">—</div>
+                <div id="band-alpha" style="font-family:var(--font-mono);font-size:1rem;color:var(--accent)">—</div>
                 <div style="font-size:0.6rem;color:var(--muted)">Alpha</div>
               </div>
               <div style="text-align:center">
-                <div id="band-beta" style="font-family:JetBrains Mono;font-size:1rem;color:#f0c040">—</div>
+                <div id="band-beta" style="font-family:var(--font-mono);font-size:1rem;color:#f0c040">—</div>
                 <div style="font-size:0.6rem;color:var(--muted)">Beta</div>
               </div>
             </div>
@@ -1577,7 +1577,7 @@ ollama pull gemma2        # 5 GB  strong STEM</div>
             </div>
             <div style="background:var(--surface);border-radius:8px;padding:12px">
               <div style="font-weight:700;font-size:0.8rem;margin-bottom:8px">🎮 Motion / IMU</div>
-              <div id="ble-imu-val" style="font-size:0.9rem;font-family:JetBrains Mono;color:var(--accent3)">x:— y:— z:—</div>
+              <div id="ble-imu-val" style="font-size:0.9rem;font-family:var(--font-mono);color:var(--accent3)">x:— y:— z:—</div>
               <div style="font-size:0.65rem;color:var(--muted)">Accelerometer · gyro</div>
               <button class="btn btn-sm" style="margin-top:8px;width:100%;background:var(--blue);color:white;border:none" onclick="connectIMU()">Connect IMU</button>
             </div>
@@ -4015,7 +4015,7 @@ function startCameraDepthFallback() {
         }
       }
       ctx.fillStyle = 'white';
-      ctx.font = '12px JetBrains Mono';
+      ctx.font = `12px ${getComputedStyle(document.documentElement).getPropertyValue('--font-mono')}`;
       ctx.fillText(dist.toFixed(2) + 'm', 8, 20);
     }
   }, 200);
@@ -4149,7 +4149,7 @@ document.addEventListener("DOMContentLoaded", function drawParTrend() {
     const x = (i/(data.length-1))*w;
     const y = h - (v/100)*h + 10;
     i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
-    ctx.fillStyle = '#8b949e'; ctx.font = '9px JetBrains Mono';
+    ctx.fillStyle = '#8b949e'; ctx.font = `9px ${getComputedStyle(document.documentElement).getPropertyValue('--font-mono')}`;
     ctx.fillText(days[i], x-8, c.height);
   });
   ctx.stroke();
@@ -4319,7 +4319,7 @@ function ddgRenderAuditRow(e) {
     e.mode,
     e.ethTx.slice(0,14)+(e.ethTx.length>14?'…':''),
     e.verified?'✅':'—',
-  ].map(v=>'<td style="padding:5px 8px;font-family:JetBrains Mono;font-size:0.65rem">' + v + '</td>').join('');
+  ].map(v=>'<td style="padding:5px 8px;font-family:var(--font-mono);font-size:0.65rem">' + v + '</td>').join('');
   tbody.appendChild(tr);
 }
 
