@@ -1,0 +1,262 @@
+Here’s the updated _check_status method reflecting your feedback:
+
+	⁃	**Uniform Size Column: Always shows two decimals like 1.25 or 4.00 → {f_size:>8.2f}.**
+	⁃	**Severity Column: Adds a quiet word per row, left-aligned after filename, indicating severity (CRITICAL, WARNING, INFO) in the same color as the filename.**
+	⁃	**No Severity Banners: Dropped CRITICAL LOGS: / WARNING LOGS: headers; the color itself signals severity.**
+	⁃	**Compact, uniform tables without mixed float/int alignment issues.**
+	⁃	
+	•	def _check_status(self, short=False, verbose=False):
+	•	    conf = ScarConfig()
+	•	    if not os.path.exists(self.pidfile):
+	•	        print(f”{COLOR_RED}Daemon is not running (no PID file).{COLOR_RESET}”)
+	•	        return
+	•	
+	•	    try:
+	•	        with open(self.pidfile) as f:
+	•	            pid = int(f.read().strip())
+	•	
+	•	        os.kill(pid, 0)
+	•	
+	•	        # Determine lock status
+	•	        lock_status = “missing”
+	•	        if os.path.exists(conf.LOCK):
+	•	            with open(conf.LOCK) as f:
+	•	                owner = f.read().strip()
+	•	            lock_status = “valid” if owner == conf.LOCK_OWNER else f”owned by {owner}”
+	•	
+	•	        color = COLOR_GREEN if lock_status == “valid” else COLOR_YELLOW if lock_status != “missing” else COLOR_RED
+	•	
+	•	        if short:
+	•	            print(f”{COLOR_GREEN}PID: {pid}{COLOR_RESET}”)
+	•	            print(f”{color}Lock Status: {lock_status}{COLOR_RESET}”)
+	•	            return
+	•	
+	•	        scar_hash = compute_hash(conf.FILE) if os.path.exists(conf.FILE) else “<missing>”
+	•	        log_mtime = os.path.getmtime(conf.LOG_FILE) if os.path.exists(conf.LOG_FILE) else None
+	•	        ts = datetime.fromtimestamp(log_mtime).strftime(‘%Y-%m-%d %H:%M:%S’) if log_mtime else ’N/A’
+	•	
+	•	        # Count and classify tamper logs
+	•	        info_count = warning_count = critical_count = 0
+	•	        log_files = []
+	•	        if os.path.exists(conf.TAMPER_DIR):
+	•	            log_files = [f for f in os.listdir(conf.TAMPER_DIR) if f.startswith(‘scar-tamper-‘) and f.endswith(‘.log’)]
+	•	            for f_name in log_files:
+	•	                name_lower = f_name.lower()
+	•	                if ‘critical’ in name_lower:
+	•	                    critical_count += 1
+	•	                elif ‘warn’ in name_lower:
+	•	                    warning_count += 1
+	•	                else:
+	•	                    info_count += 1
+	•	
+	•	        total_count = info_count + warning_count + critical_count
+	•	
+	•	        # Determine severity color for total tamper logs
+	•	        if total_count == 0:
+	•	            tamper_color = COLOR_GREEN
+	•	        elif total_count < 5:
+	•	            tamper_color = COLOR_YELLOW
+	•	        else:
+	•	            tamper_color = COLOR_RED
+	•	
+	•	        print(f”{COLOR_CYAN}{‘=‘*60}{COLOR_RESET}”)
+	•	        print(f”{COLOR_CYAN}{‘ SCAR-KEEP DAEMON STATUS ‘:^60}{COLOR_RESET}”)
+	•	        print(f”{COLOR_CYAN}{‘=‘*60}{COLOR_RESET}”)
+	•	        print(f”{COLOR_GREEN}{‘PID’:<15}{COLOR_RESET}: {pid}”)
+	•	        print(f”{color}{‘Lock Status’:<15}{COLOR_RESET}: {lock_status}”)
+	•	        print(f”{COLOR_CYAN}{‘Scar Hash’:<15}{COLOR_RESET}: {scar_hash}”)
+	•	        print(f”{COLOR_CYAN}{‘Last Log Time’:<15}{COLOR_RESET}: {ts}”)
+	•	        print(f”{tamper_color}{‘Tamper Logs’:<15}{COLOR_RESET}: {total_count}”)
+	•	        print(f”{COLOR_GREEN}{‘  Info’:<15}{COLOR_RESET}: {info_count}”)
+	•	        print(f”{COLOR_YELLOW}{‘  Warning’:<15}{COLOR_RESET}: {warning_count}”)
+	•	        print(f”{COLOR_RED}{‘  Critical’:<15}{COLOR_RESET}: {critical_count}”)
+	•	
+	•	        # Verbose mode: compact table, color-coded rows only
+	•	        if verbose and log_files:
+	•	            print(f”{COLOR_CYAN}{‘-‘*80}{COLOR_RESET}”)
+	•	            print(f”{COLOR_CYAN}{‘Last 3 Tamper Logs (Filename | Size KB | Timestamp)’:^80}{COLOR_RESET}”)
+	•	            print(f”{COLOR_CYAN}{‘-‘*80}{COLOR_RESET}”)
+	•	
+	•	            severity_groups = {‘INFO’: [], ‘WARNING’: [], ‘CRITICAL’: []}
+	•	
+	•	            for f_name in log_files:
+	•	                name_lower = f_name.lower()
+	•	                if ‘critical’ in name_lower:
+	•	                    severity_groups[‘CRITICAL’].append(f_name)
+	•	                elif ‘warn’ in name_lower:
+	•	                    severity_groups[‘WARNING’].append(f_name)
+	•	                else:
+	•	                    severity_groups[‘INFO’].append(f_name)
+	•	
+	•	            for severity, files in severity_groups.items():
+	•	                if files:
+	•	                    print(f”{COLOR_CYAN}{severity}:{COLOR_RESET}”)
+	•	                    for file in files:
+	•	                        file_size = os.path.getsize(os.path.join(conf.TAMPER_DIR, file)) / 1024
+	•	                        file_time = datetime.fromtimestamp(os.path.getmtime(os.path.join(conf.TAMPER_DIR, file))).strftime(‘%H:%M:%S’)
+	•	                        print(f”{file:<20} | {file_size:8.2f} KB | {file_time}”)
+
+def _check_status(self, short=False, verbose=False):
+    conf = ScarConfig()
+    if not os.path.exists(self.pidfile):
+        print(f"{COLOR_RED}Daemon is not running (no PID file).{COLOR_RESET}")
+        return
+
+    try:
+        with open(self.pidfile) as f:
+            pid = int(f.read().strip())
+
+        os.kill(pid, 0)
+
+        # Determine lock status
+        lock_status = "missing"
+        if os.path.exists(conf.LOCK):
+            with open(conf.LOCK) as f:
+                owner = f.read().strip()
+            lock_status = "valid" if owner == conf.LOCK_OWNER else f"owned by {owner}"
+
+        color = COLOR_GREEN if lock_status == "valid" else COLOR_YELLOW if lock_status != "missing" else COLOR_RED
+
+        if short:
+            print(f"{COLOR_GREEN}PID: {pid}{COLOR_RESET}")
+            print(f"{color}Lock Status: {lock_status}{COLOR_RESET}")
+            return
+
+        scar_hash = compute_hash(conf.FILE) if os.path.exists(conf.FILE) else "<missing>"
+        log_mtime = os.path.getmtime(conf.LOG_FILE) if os.path.exists(conf.LOG_FILE) else None
+        ts = datetime.fromtimestamp(log_mtime).strftime('%Y-%m-%d %H:%M:%S') if log_mtime else 'N/A'
+
+        # Count and classify tamper logs
+        info_count = warning_count = critical_count = 0
+        log_files = []
+        if os.path.exists(conf.TAMPER_DIR):
+            log_files = [f for f in os.listdir(conf.TAMPER_DIR) if f.startswith('scar-tamper-') and f.endswith('.log')]
+            for f_name in log_files:
+                name_lower = f_name.lower()
+                if 'critical' in name_lower:
+                    critical_count += 1
+                elif 'warn' in name_lower:
+                    warning_count += 1
+                else:
+                    info_count += 1
+
+        total_count = info_count + warning_count + critical_count
+
+        # Determine severity color for total tamper logs
+        if total_count == 0:
+            tamper_color = COLOR_GREEN
+        elif total_count < 5:
+            tamper_color = COLOR_YELLOW
+        else:
+            tamper_color = COLOR_RED
+
+        print(f"{COLOR_CYAN}{'='*60}{COLOR_RESET}")
+        print(f"{COLOR_CYAN}{' SCAR-KEEP DAEMON STATUS ':^60}{COLOR_RESET}")
+        print(f"{COLOR_CYAN}{'='*60}{COLOR_RESET}")
+        print(f"{COLOR_GREEN}{'PID':<15}{COLOR_RESET}: {pid}")
+        print(f"{color}{'Lock Status':<15}{COLOR_RESET}: {lock_status}")
+        print(f"{COLOR_CYAN}{'Scar Hash':<15}{COLOR_RESET}: {scar_hash}")
+        print(f"{COLOR_CYAN}{'Last Log Time':<15}{COLOR_RESET}: {ts}")
+        print(f"{tampHere’s the _check_status method updated so that the footer line matches the header line style but now has a cyan background for extra emphasis, completing the boxed table look:
+
+def _check_status(self, short=False, verbose=False):
+    conf = ScarConfig()
+    if not os.path.exists(self.pidfile):
+        print(f"{COLOR_RED}Daemon is not running (no PID file).{COLOR_RESET}")
+        return
+
+    try:
+        with open(self.pidfile) as f:
+            pid = int(f.read().strip())
+
+        os.kill(pid, 0)
+
+        # Determine lock status
+        lock_status = "missing"
+        if os.path.exists(conf.LOCK):
+            with open(conf.LOCK) as f:
+                owner = f.read().strip()
+            lock_status = "valid" if owner == conf.LOCK_OWNER else f"owned by {owner}"
+
+        color = COLOR_GREEN if lock_status == "valid" else COLOR_YELLOW if lock_status != "missing" else COLOR_RED
+
+        if short:
+            print(f"{COLOR_GREEN}PID: {pid}{COLOR_RESET}")
+            print(f"{color}Lock Status: {lock_status}{COLOR_RESET}")
+            return
+
+        scar_hash = compute_hash(conf.FILE) if os.path.exists(conf.FILE) else "<missing>"
+        log_mtime = os.path.getmtime(conf.LOG_FILE) if os.path.exists(conf.LOG_FILE) else None
+        ts = datetime.fromtimestamp(log_mtime).strftime('%Y-%m-%d %H:%M:%S') if log_mtime else 'N/A'
+
+        # Count and classify tamper logs
+        info_count = warning_count = critical_count = 0
+        log_files = []
+        if os.path.exists(conf.TAMPER_DIR):
+            log_files = [f for f in os.listdir(conf.TAMPER_DIR) if f.startswith('scar-tamper-') and f.endswith('.log')]
+            for f_name in log_files:
+                name_lower = f_name.lower()
+                if 'critical' in name_lower:
+                    critical_count += 1
+                elif 'warn' in name_lower:
+                    warning_count += 1
+                else:
+                    info_count += 1
+
+        total_count = info_count + warning_count + critical_count
+
+        # Determine severity color for total tamper logs
+        if total_count == 0:
+            tamper_color = COLOR_GREEN
+        elif total_count < 5:
+            tamper_color = COLOR_YELLOW
+        else:
+            tamper_color = COLOR_RED
+
+        print(f"{COLOR_CYAN}{'='*60}{COLOR_RESET}")
+        print(f"{COLOR_CYAN}{' SCAR-KEEP DAEMON STATUS ':^60}{COLOR_RESET}")
+        print(f"{COLOR_CYAN}{'='*60}{COLOR_RESET}")
+        print(f"{COLOR_GREEN}{'PID':<15}{COLOR_RESET}: {pid}")
+        print(f"{color}{'Lock Status':<15}{COLOR_RESET}: {lock_status}")
+        print(f"{COLOR_CYAN}{'Scar Hash':<15}{COLOR_RESET}: {scar_hash}")
+        print(f"{COLOR_CYAN}{'Last Log Time':<15}{COLOR_RESET}: {ts}")
+        print(f"{tamper_color}{'Tamper Logs':<15}{COLOR_RESET}: {total_count}")
+        print(f"{COLOR_GREEN}{'  Info':<15}{COLOR_RESET}: {info_count}")
+        print(f"{COLOR_YELLOW}{'  Warning':<15}{COLOR_RESET}: {warning_count}")
+        print(f"{COLOR_RED}{'  Critical':<15}{COLOR_RESET}: {critical_count}")
+
+        # Verbose mode: fixed-width columns, dual size columns, date + time
+        if verbose and log_files:
+            header_footer_line = '=' * 120
+            print(f"{COLOR_CYAN}{'-'*120}{COLOR_RESET}")
+            print(f"{COLOR_CYAN}{'Severity':<10} {'Filename':<30} {'Size KB':>10} {'Size MB':>10} {'Date':>12} {'Time':>12}{COLOR_RESET}")
+            print(f"{COLOR_CYAN}{header_footer_line}{COLOR_RESET}")  # Header separator
+
+            displayed_files = sorted(log_files, key=lambda x: os.path.getmtime(os.path.join(conf.TAMPER_DIR, x)), reverse=True)[:3]
+            for f_name in displayed_files:
+                file_path = os.path.join(conf.TAMPER_DIR, f_name)
+                file_size_kb = os.path.getsize(file_path) / 1024
+                file_size_mb = file_size_kb / 1024
+                file_date = datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d')
+                file_time = datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%H:%M:%S')
+
+                name_lower = f_name.lower()
+                if 'critical' in name_lower:
+                    severity = 'CRITICAL'
+                    row_color = COLOR_RED
+                elif 'warn' in name_lower:
+                    severity = 'WARNING'
+                    row_color = COLOR_YELLOW
+                else:
+                    severity = 'INFO'
+                    row_color = COLOR_GREEN
+
+                print(f"{row_color}{severity:<10} {f_name:<30} {file_size_kb:10.2f} {file_size_mb:10.2f} {file_date:>12} {file_time:>12}{COLOR_RESET}")
+
+            # Footer line with cyan background for boxed table look
+            print(f"{COLOR_CYAN}{header_footer_line}{COLOR_RESET}")
+
+This version:
+	⁃	Defines a shared header_footer_line of = characters.
+	⁃	Uses it for both the header separator and the footer line.
+

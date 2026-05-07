@@ -1,0 +1,75 @@
+Air-Gapped Session Cheat Sheet
+
+Data Flow Diagram (Air-Gapped)
+Muse BLE (256 Hz raw) ──► FFT (on-device) ──► eegRatio  
+MediaPipe (camera)    ──► Landmarks ──► poseScore  
+
+          ▼  
+fuseAttention( eegRatio, poseScore, deltaMs, baseline )  
+          ▼  
+SessionLogger (in-memory) ──► Timeline Chart  
+          ▼  
+CSV Export (processed only) ──► USB → Teacher / Parent
+
+---
+
+Setup (Collapse to Expand)
+Function
+Steps
+Purpose
+Load Encrypted Baseline
+1. loadBaselineSecure()<br>2. If null → run Calibration<br>3. Store per-device AES key
+Secure, local-only student profile
+Run Calibration
+1. Start 20s timer<br>2. Collect raw eegRatio + poseScore<br>3. Save encrypted
+Individualized resting norm (no averaging UI)
+Initialize Logger
+useSessionLogger(baseline)
+Real-time point collection (no storage)
+
+---
+
+Live Use (Collapse to Expand)
+Function
+Steps
+Purpose
+fuseAttention()
+1. Subtract baseline<br>2. Dynamic weight<br>3. Smooth + hysteresis
+Stable, confidence-aware fused score
+useSessionLogger
+1. Push every 1s tick<br>2. Access session/current<br>3. Pause/resume
+In-memory history, no disk
+SessionTimeline
+1. Pass baseline<br>2. Render Recharts live<br>3. Show current state
+Visual trend (not surveillance)
+
+---
+
+CSV Export (Collapse to Expand)
+Function
+Steps
+Purpose
+exportCSV()
+1. Build header + rows<br>2. Blob → download<br>3. Revoke URL
+Privacy-safe share (no raw EEG)
+Teacher Import (USB)
+1. Pick CSV<br>2. Parse rows<br>3. Load heatmap
+Offline class aggregation
+Parent Report
+1. Teacher exports CSV<br>2. Send via USB/email
+Trend data only—no PII leak
+
+---
+
+Security Notes
+	⁃	All data RAM-only during session
+	⁃	Baselines AES-encrypted, key per device
+	⁃	CSV: timestamp, ratios, score, state — no raw brainwaves
+	⁃	If decryption fails: auto-recalibrate
+
+---
+
+Ready for Clinical/School Deployment
+	⁃	Segment sessions by subject
+	⁃	Parent filtered portal
+	⁃	Optional pause/resume polish
