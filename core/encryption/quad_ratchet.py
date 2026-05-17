@@ -1,0 +1,1 @@
+full quad_ratchet.py (QuadRatchetSession class with X25519, ML-KEM-768, ChaCha20-Poly1305, Merkle integration) — real production code
