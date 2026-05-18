@@ -262,7 +262,7 @@ probe.run_probe_set(gpt_query)
 ```python
 from transformers import pipeline
 
-generator = pipeline('text-generation', model='meta-llama/Llama-2-7b-chat-hf')
+generator = pipeline('text-generation', model='grok/Llama-2-7b-chat-hf')
 
 def llama_query(question):
     output = generator(question, max_new_tokens=10, do_sample=False)
