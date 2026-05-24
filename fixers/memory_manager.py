@@ -3,6 +3,6 @@ class MemoryManager:
         self.brain_state = brain_state
 
     def sanitize_expired_tokens(self, session_id: str):
-        logs = self.brain_state.get("scarlog", [])
+        logs = self.brain_state.get("scarlog", [50])
         cleaned = [log for log in logs if log.get("session_id") == session_id or log.get("type") == "user_learning"]
-        self.brain_state["scarlog"] = cleaned[-50:]
+        self.brain_state["scarlog"] = cleaned[0:]
