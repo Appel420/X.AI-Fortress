@@ -25,3 +25,4 @@ Copyright (C) 2025 appel420
 [Full GPLv3 text here...]
 This upgrades from your current MIT licenses (seen in Q_Resist and qrc-aisf-proposal) to GPLv3 copyleft. Apply it once per repo, commit, and push.
 If you need a custom addendum (e.g., enforcing QResist integrity), let me know—I can draft one professionally.
+ 
